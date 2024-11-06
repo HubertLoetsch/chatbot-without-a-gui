@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>LLM Chat Application</title>
     <style>
+        /* Ihr CSS-Styling hier */
         body {
             font-family: Arial, sans-serif;
             background-color: #ECF0F1;
@@ -38,20 +39,14 @@
         #send-button:hover {
             background-color: #2980B9;
         }
-        #localdocs-checkbox {
-            margin-top: 10px;
-        }
     </style>
 </head>
 <body>
     <h1>LLM Chat Application</h1>
     <div id="chat-window"></div>
-    <input type="text" id="message" placeholder="Nachricht eingeben...">
+    <input type="text" id="message" name="message" placeholder="Nachricht eingeben...">
     <button id="send-button">Senden</button>
-    <div id="localdocs-checkbox">
-        <input type="checkbox" id="use-localdocs">
-        <label for="use-localdocs">LocalDocs verwenden</label>
-    </div>
+    <input type="hidden" id="conversation_history" name="conversation_history">
 
     <script>
         let conversation_history = '';
@@ -65,25 +60,29 @@
 
         function sendMessage() {
             var message = document.getElementById('message').value;
-            var use_localdocs = document.getElementById('use-localdocs').checked;
+            var conversation_history_field = document.getElementById('conversation_history');
+
             if (message.trim() === '') {
                 return;
             }
+
             var chatWindow = document.getElementById('chat-window');
             chatWindow.innerHTML += '<p><b>Sie:</b> ' + message + '</p>';
             chatWindow.scrollTop = chatWindow.scrollHeight;
             document.getElementById('message').value = '';
 
+            var formData = new FormData();
+            formData.append('message', message);
+            formData.append('conversation_history', conversation_history);
+
             fetch('/chat', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({'message': message, 'use_localdocs': use_localdocs, 'conversation_history': conversation_history}),
+                body: formData,
             })
             .then(response => response.json())
             .then(data => {
                 conversation_history = data.conversation_history;
+                conversation_history_field.value = conversation_history;
                 chatWindow.innerHTML += '<p><b>KI:</b> ' + data.response + '</p>';
                 chatWindow.scrollTop = chatWindow.scrollHeight;
             })
