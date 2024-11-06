@@ -6,10 +6,10 @@ import os
 app = Flask(__name__)
 
 # Zugangstoken aus Umgebungsvariable abrufen
-HF_TOKEN = os.getenv('HF_TOKEN')
+HF_TOKEN = os.getenv('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')
 
 # Modellname eingeben
-model_name = "bigscience/bloom-560m"  # Beispiel für ein größeres Modell, ersetzen Sie dies durch Ihr gewünschtes Modell
+model_name = "meta-llama/Llama-3.1-8B-Instruct"  # Beispiel für ein größeres Modell, ersetzen Sie dies durch Ihr gewünschtes Modell
 
 # Prüfen, ob Zugangstoken benötigt wird
 try:
