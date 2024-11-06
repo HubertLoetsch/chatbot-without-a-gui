@@ -1,17 +1,27 @@
 from flask import Flask, request, jsonify, render_template
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from sentence_transformers import SentenceTransformer
-import faiss
 import os
-import numpy as np
 
 app = Flask(__name__)
 
-# Laden Sie Ihr Chat-Modell
-model_name = "dbmdz/german-gpt2"  # Ersetzen Sie dies durch Ihr gewünschtes Modell
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-chat_model = AutoModelForCausalLM.from_pretrained(model_name)
+# Zugangstoken aus Umgebungsvariable abrufen
+HF_TOKEN = os.getenv('HF_TOKEN')
+
+# Modellname eingeben
+model_name = "bigscience/bloom-560m"  # Beispiel für ein größeres Modell, ersetzen Sie dies durch Ihr gewünschtes Modell
+
+# Prüfen, ob Zugangstoken benötigt wird
+try:
+    if HF_TOKEN:
+        tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=HF_TOKEN)
+        chat_model = AutoModelForCausalLM.from_pretrained(model_name, use_auth_token=HF_TOKEN)
+    else:
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        chat_model = AutoModelForCausalLM.from_pretrained(model_name)
+except Exception as e:
+    print(f"Fehler beim Laden des Modells: {e}")
+    raise SystemExit
 
 # Prüfen und setzen des pad_token, falls notwendig
 if tokenizer.pad_token is None:
