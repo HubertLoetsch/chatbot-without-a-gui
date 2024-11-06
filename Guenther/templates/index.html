@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>LLM Chat Application</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ECF0F1;
+            margin: 0;
+            padding: 20px;
+        }
+        #chat-window {
+            border: 1px solid #BDC3C7;
+            border-radius: 5px;
+            padding: 10px;
+            height: 400px;
+            overflow-y: scroll;
+            background-color: #FFFFFF;
+        }
+        #message {
+            width: 80%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #BDC3C7;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        #send-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #3498DB;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #send-button:hover {
+            background-color: #2980B9;
+        }
+        #localdocs-checkbox {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>LLM Chat Application</h1>
+    <div id="chat-window"></div>
+    <input type="text" id="message" placeholder="Nachricht eingeben...">
+    <button id="send-button">Senden</button>
+    <div id="localdocs-checkbox">
+        <input type="checkbox" id="use-localdocs">
+        <label for="use-localdocs">LocalDocs verwenden</label>
+    </div>
+
+    <script>
+        let conversation_history = '';
+
+        document.getElementById('send-button').addEventListener('click', sendMessage);
+        document.getElementById('message').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function sendMessage() {
+            var message = document.getElementById('message').value;
+            var use_localdocs = document.getElementById('use-localdocs').checked;
+            if (message.trim() === '') {
+                return;
+            }
+            var chatWindow = document.getElementById('chat-window');
+            chatWindow.innerHTML += '<p><b>Sie:</b> ' + message + '</p>';
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+            document.getElementById('message').value = '';
+
+            fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({'message': message, 'use_localdocs': use_localdocs, 'conversation_history': conversation_history}),
+            })
+            .then(response => response.json())
+            .then(data => {
+                conversation_history = data.conversation_history;
+                chatWindow.innerHTML += '<p><b>KI:</b> ' + data.response + '</p>';
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            })
+            .catch(error => {
+                console.error('Fehler:', error);
+                chatWindow.innerHTML += '<p><i>Fehler bei der Kommunikation mit dem Server.</i></p>';
+            });
+        }
+    </script>
+</body>
+</html>
